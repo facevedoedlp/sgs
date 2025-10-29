@@ -5,9 +5,9 @@ services:
     image: postgres:15-alpine
     container_name: sgs_postgres
     environment:
-      POSTGRES_DB: sgs_leon_db
+      POSTGRES_DB: sgs_db
       POSTGRES_USER: sgs_user
-      POSTGRES_PASSWORD: dev_password_2024
+      POSTGRES_PASSWORD: password_2024
     ports:
       - "5433:5432"
     volumes:

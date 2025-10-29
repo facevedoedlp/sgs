@@ -6,21 +6,21 @@ class DomicilioPersonaSerializer(serializers.ModelSerializer):
     class Meta:
         model = DomicilioPersona
         fields = '__all__'
-        read_only_fields = ['persona']
+        read_only_fields = ['personaid']
 
 
 class EmailPersonaSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmailPersona
         fields = '__all__'
-        read_only_fields = ['persona']
+        read_only_fields = ['personaid']
 
 
 class TelefonoPersonaSerializer(serializers.ModelSerializer):
     class Meta:
         model = TelefonoPersona
         fields = '__all__'
-        read_only_fields = ['persona']
+        read_only_fields = ['personaid']
 
 
 class PersonaSerializer(serializers.ModelSerializer):
@@ -28,11 +28,42 @@ class PersonaSerializer(serializers.ModelSerializer):
     domicilios = DomicilioPersonaSerializer(many=True, read_only=True)
     emails = EmailPersonaSerializer(many=True, read_only=True)
     telefonos = TelefonoPersonaSerializer(many=True, read_only=True)
-    nombre_completo = serializers.CharField(read_only=True)
+
+    # Campos calculados - SIN source porque el método se llama igual
+    nombre_completo = serializers.SerializerMethodField()
+    edad = serializers.SerializerMethodField()
 
     class Meta:
         model = Persona
-        fields = '__all__'
+        fields = [
+            'personaid',
+            'apellido',
+            'nombre',
+            'documento',
+            'tipodocumentoid',
+            'cuil',
+            'fechanacimiento',
+            'fechafallecimiento',
+            'sexoid',
+            'estadocivilid',
+            'paisid',
+            'profesionid',
+            'notas',
+            'sendrecibos',
+            'nombre_completo',
+            'edad',
+            'domicilios',
+            'emails',
+            'telefonos'
+        ]
+
+    def get_nombre_completo(self, obj):
+        """Retorna el nombre completo"""
+        return obj.nombre_completo()
+
+    def get_edad(self, obj):
+        """Retorna la edad"""
+        return obj.edad()
 
 
 class PersonaCreateSerializer(serializers.ModelSerializer):
@@ -43,7 +74,24 @@ class PersonaCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Persona
-        fields = ['apellido', 'nombre', 'documento', 'fecha_nacimiento', 'domicilios', 'emails', 'telefonos']
+        fields = [
+            'apellido',
+            'nombre',
+            'documento',
+            'tipodocumentoid',
+            'cuil',
+            'fechanacimiento',
+            'fechafallecimiento',
+            'sexoid',
+            'estadocivilid',
+            'paisid',
+            'profesionid',
+            'notas',
+            'sendrecibos',
+            'domicilios',
+            'emails',
+            'telefonos'
+        ]
 
     def create(self, validated_data):
         domicilios_data = validated_data.pop('domicilios', [])
@@ -54,14 +102,14 @@ class PersonaCreateSerializer(serializers.ModelSerializer):
 
         # Crear domicilios
         for domicilio_data in domicilios_data:
-            DomicilioPersona.objects.create(persona=persona, **domicilio_data)
+            DomicilioPersona.objects.create(personaid=persona, **domicilio_data)
 
         # Crear emails
         for email_data in emails_data:
-            EmailPersona.objects.create(persona=persona, **email_data)
+            EmailPersona.objects.create(personaid=persona, **email_data)
 
         # Crear teléfonos
         for telefono_data in telefonos_data:
-            TelefonoPersona.objects.create(persona=persona, **telefono_data)
+            TelefonoPersona.objects.create(personaid=persona, **telefono_data)
 
         return persona
